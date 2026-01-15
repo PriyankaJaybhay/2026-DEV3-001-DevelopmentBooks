@@ -24,13 +24,16 @@ public class BookPriceCalculatorServiceImpl implements BookPriceCalculatorServic
     }
 
     private double findBestPriceForTheBasket(Basket basket) {
-        double totalPrice = 0.0;
         Set<Book> uniqueBooks = new HashSet<>(basket.getBooks());
 
-        if (!basket.getBooks().isEmpty() && uniqueBooks.size() == 2) {
-            totalPrice = uniqueBooks.size() * BOOK_PRICE * (0.95);
-            return totalPrice;
+        //To handle case of 2 unique books
+        if (uniqueBooks.size() == 2) {
+            return basket.getBooks().size() * BOOK_PRICE * 0.95;
         }
-        return uniqueBooks.size() * BOOK_PRICE;
+        //To handle case of 3 unique books
+        if (uniqueBooks.size() == 3) {
+            return basket.getBooks().size() * BOOK_PRICE * 0.90;
+        }
+        return basket.getBooks().size() * BOOK_PRICE;
     }
 }
