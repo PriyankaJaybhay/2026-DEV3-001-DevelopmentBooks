@@ -5,8 +5,7 @@ import com.bookstore.model.Book;
 import com.bookstore.service.BookPriceCalculatorService;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class BookPriceCalculatorServiceImpl implements BookPriceCalculatorService {
@@ -17,34 +16,64 @@ public class BookPriceCalculatorServiceImpl implements BookPriceCalculatorServic
     public double calculatePrice(Basket basket) {
         if (basket == null || basket.getBooks().isEmpty()) {
             return 0.0;
-        } else if (basket.getBooks().size() == 1) {
-            return BOOK_PRICE;
         }
         return findBestPriceForTheBasket(basket);
     }
 
     private double findBestPriceForTheBasket(Basket basket) {
-        Set<Book> uniqueBooks = new HashSet<>(basket.getBooks());
-
-        /*To handle case of 2 unique books*/
-        if (uniqueBooks.size() == 2) {
-            return basket.getBooks().size() * BOOK_PRICE * 0.95; /*Discount 5% = 1 - 0.05 = 0.95*/
+        Map<Book, Integer> bookCountMap = new HashMap<>();
+        for (Book book : basket.getBooks()) {
+            if (bookCountMap.containsKey(book)) {
+                bookCountMap.put(book, bookCountMap.get(book) + 1);
+            } else {
+                bookCountMap.put(book, 1);
+            }
         }
 
-        /*To handle case of 3 unique books*/
-        if (uniqueBooks.size() == 3) {
-            return basket.getBooks().size() * BOOK_PRICE * 0.90; /*Discount 10% = 1 - 0.10 = 0.90*/
-        }
+        double totalPrice = 0.0;
 
-        /*To handle case of 4 unique books*/
-        if (uniqueBooks.size() == 4) {
-            return basket.getBooks().size() * BOOK_PRICE * 0.80; /*Discount 20% = 1 - 0.20 = 0.80*/
+        while (!bookCountMap.isEmpty()) {
+
+            int bookGroupSize = 0;
+            List<Book> booksToRemove = new ArrayList<>();
+
+            // Decrease count for each book and track which ones to remove
+            for (Map.Entry<Book, Integer> bookKey : bookCountMap.entrySet()) {
+                bookGroupSize++;
+
+                int currentCount = bookKey.getValue();
+                int newCount = currentCount - 1;
+
+                if (newCount == 0) {
+                    booksToRemove.add(bookKey.getKey());
+                } else {
+                    bookKey.setValue(newCount);
+                }
+            }
+
+            // Remove books that reached count 0
+            for (Book book : booksToRemove) {
+                bookCountMap.remove(book);
+            }
+
+            // Update total price for this group
+            totalPrice += bookGroupSize * BOOK_PRICE * getDiscountFactor(bookGroupSize);
         }
-        
-        /*To handle case of 5 unique books*/
-        if (uniqueBooks.size() == 5) {
-            return basket.getBooks().size() * BOOK_PRICE * 0.75; /*Discount 20% = 1 - 0.25 = 0.75*/
+        return totalPrice;
+    }
+
+    private double getDiscountFactor(int bookGroupSize) {
+        switch (bookGroupSize) {
+            case 2:
+                return 0.95;
+            case 3:
+                return 0.90;
+            case 4:
+                return 0.80;
+            case 5:
+                return 0.75;
+            default:
+                return 1.0;
         }
-        return basket.getBooks().size() * BOOK_PRICE;
     }
 }
