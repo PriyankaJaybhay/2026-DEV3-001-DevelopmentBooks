@@ -86,4 +86,33 @@ class BasketPriceCalculatorTest {
         Basket basket = new Basket(List.of(Book.CLEAN_CODE, Book.CLEAN_CODE, Book.THE_CLEAN_CODER, Book.THE_CLEAN_CODER));
         assertEquals(190.0, bookPriceService.calculatePrice(basket));
     }
+
+    @Test
+    void testComplexGroupingExample() {
+        // 2 Clean Code + 2 Clean Coder + 2 Clean Architecture + 1 TDD + 1 Legacy
+        // Optimal grouping: [4, 4] = 4*50*0.80 + 4*50*0.80 = 160 + 160 = 320
+        Basket basket = new Basket(List.of(
+            Book.CLEAN_CODE, Book.CLEAN_CODE,
+            Book.THE_CLEAN_CODER, Book.THE_CLEAN_CODER,
+            Book.CLEAN_ARCHITECTURE, Book.CLEAN_ARCHITECTURE,
+            Book.TDD_BY_EXAMPLE,
+            Book.LEGACY_CODE
+        ));
+        assertEquals(320.0, bookPriceService.calculatePrice(basket));
+    }
+
+    @Test
+    void testElevenBooksMixedCounts() {
+        // 3 Clean Code + 3 Clean Coder + 2 Clean Architecture + 2 TDD + 1 Legacy = 11 books
+        // Optimal grouping: [5, 4, 2] = 187.5 + 160 + 95 = 442.5
+        Basket basket = new Basket(List.of(
+            Book.CLEAN_CODE, Book.CLEAN_CODE, Book.CLEAN_CODE,
+            Book.THE_CLEAN_CODER, Book.THE_CLEAN_CODER, Book.THE_CLEAN_CODER,
+            Book.CLEAN_ARCHITECTURE, Book.CLEAN_ARCHITECTURE,
+            Book.TDD_BY_EXAMPLE, Book.TDD_BY_EXAMPLE,
+            Book.LEGACY_CODE
+        ));
+        assertEquals(442.5, bookPriceService.calculatePrice(basket));
+    }
+
 }

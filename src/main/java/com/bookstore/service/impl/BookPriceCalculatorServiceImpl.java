@@ -30,36 +30,59 @@ public class BookPriceCalculatorServiceImpl implements BookPriceCalculatorServic
             }
         }
 
-        double totalPrice = 0.0;
+        List<Integer> groupOfDifferentBooksSize = new ArrayList<>();
+        List<Integer> listOfEachBookCount = new ArrayList<>(bookCountMap.values());
 
-        while (!bookCountMap.isEmpty()) {
+        while (!listOfEachBookCount.isEmpty()) {
+            //Collect size of the list every time
+            groupOfDifferentBooksSize.add(listOfEachBookCount.size());
 
-            int bookGroupSize = 0;
-            List<Book> booksToRemove = new ArrayList<>();
-
-            // Decrease count for each book and track which ones to remove
-            for (Map.Entry<Book, Integer> bookKey : bookCountMap.entrySet()) {
-                bookGroupSize++;
-
-                int currentCount = bookKey.getValue();
-                int newCount = currentCount - 1;
-
-                if (newCount == 0) {
-                    booksToRemove.add(bookKey.getKey());
-                } else {
-                    bookKey.setValue(newCount);
-                }
+            // Decrement all counts of each book as 1 set of different books is already added in groupOfDifferentBooksSize
+            for (int i = 0; i < listOfEachBookCount.size(); i++) {
+                listOfEachBookCount.set(i, listOfEachBookCount.get(i) - 1);
             }
-
-            // Remove books that reached count 0
-            for (Book book : booksToRemove) {
-                bookCountMap.remove(book);
-            }
-
-            // Update total price for this group
-            totalPrice += bookGroupSize * BOOK_PRICE * getDiscountFactor(bookGroupSize);
+            // Remove all that reached zero so that we can have different books in next iteration
+            listOfEachBookCount.removeIf(count -> count == 0);
         }
-        return totalPrice;
+
+        //optimize groups of different books to get best discount based on group size
+        optimizeGroupOfDifferentBooksSize(groupOfDifferentBooksSize);
+
+        double totalBasketPrice = 0.0;
+        for (int groupSize : groupOfDifferentBooksSize) {
+            totalBasketPrice += groupSize * BOOK_PRICE * getDiscountFactor(groupSize);
+        }
+        return totalBasketPrice;
+    }
+
+    private void optimizeGroupOfDifferentBooksSize(List<Integer> groupOfDifferentBooksSize) {
+        int countOfFiveBooks = 0;
+        int countOfThreeBooks = 0;
+
+        //loop on groupOfDifferentBooksSize and find the number of set of 5 books and 3 books
+        for (int size : groupOfDifferentBooksSize) {
+            if (size == 5) {
+                countOfFiveBooks++;
+            }
+            if (size == 3) {
+                countOfThreeBooks++;
+            }
+        }
+        
+        int pairsToConvert = Math.min(countOfFiveBooks, countOfThreeBooks);
+
+        if (pairsToConvert > 0) {
+            //remove set of 5 and 3 books from the list
+            for (int i = 0; i < pairsToConvert; i++) {
+                groupOfDifferentBooksSize.remove(Integer.valueOf(5));
+                groupOfDifferentBooksSize.remove(Integer.valueOf(3));
+            }
+
+            //add set of 4 books for the removed set of 5 and 3 books
+            for (int i = 0; i < pairsToConvert * 2; i++) {
+                groupOfDifferentBooksSize.add(4);
+            }
+        }
     }
 
     private double getDiscountFactor(int bookGroupSize) {
