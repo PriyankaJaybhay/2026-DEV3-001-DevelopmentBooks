@@ -54,4 +54,16 @@ class BasketPriceCalculatorTest {
         Basket basket = new Basket(List.of(Book.CLEAN_CODE, Book.CLEAN_CODE, Book.CLEAN_CODE));
         assertEquals(150.0, bookPriceService.calculatePrice(basket));
     }
+
+    @Test
+    void testFourDifferentBooks() {
+        Basket basket = new Basket(List.of(Book.CLEAN_CODE, Book.CLEAN_ARCHITECTURE, Book.LEGACY_CODE, Book.TDD_BY_EXAMPLE));
+        assertEquals(160.0, bookPriceService.calculatePrice(basket));
+    }
+
+    @Test
+    void testFiveDifferentBooks() {
+        Basket basket = new Basket(List.of(Book.CLEAN_CODE, Book.CLEAN_ARCHITECTURE, Book.LEGACY_CODE, Book.TDD_BY_EXAMPLE, Book.THE_CLEAN_CODER));
+        assertEquals(187.50, bookPriceService.calculatePrice(basket));
+    }
 }
