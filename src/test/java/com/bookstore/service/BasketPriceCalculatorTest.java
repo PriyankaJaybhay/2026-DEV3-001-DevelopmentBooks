@@ -30,4 +30,10 @@ class BasketPriceCalculatorTest {
         Basket basket = new Basket(List.of(Book.CLEAN_CODE));
         assertEquals(50.0, bookPriceService.calculatePrice(basket));
     }
+
+    @Test
+    void testTwoDifferentBooks() {
+        Basket basket = new Basket(List.of(Book.CLEAN_CODE, Book.CLEAN_ARCHITECTURE));
+        assertEquals(95.0, bookPriceService.calculatePrice(basket));
+    }
 }
